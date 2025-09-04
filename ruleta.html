@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Simulación Ruleta</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 20px;
+    }
+    h1 { text-align: center; }
+    button {
+      padding: 10px 20px;
+      margin: 10px 0;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+      background: #fff;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      text-align: center;
+      padding: 5px;
+    }
+    th { background: #eee; }
+    .stats {
+      margin-top: 20px;
+      padding: 10px;
+      background: #fff;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Simulación de Ruleta Europea - Ley de Grandes Numeros</h1>
+	
+
+  <button onclick="simular(1)">Simular 1 tirada</button>
+<button onclick="simular(10)">Simular 10 tiradas</button>
+  <button onclick="simular(100)">Simular 100 tiradas</button>
+  <button onclick="simular(1000)">Simular 1000 tiradas</button>
+  <button onclick="reset()">Reiniciar</button>
+
+  <div id="resumen" class="stats"></div>
+  <table id="tablaNumeros">
+    <thead>
+      <tr>
+        <th>Número</th>
+        <th>Frecuencia</th>
+        <th>Porcentaje</th>
+        <th>Probabilidad teórica</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div id="zonas" class="stats"></div>
+
+<script>
+const totalNumeros = 37; // ruleta europea (0–36)
+let tiradas = 0;
+let contador = Array(totalNumeros).fill(0);
+
+// Definir colores de la ruleta europea
+const rojos = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
+const negros = [2,4,6,8,10,11,13,15,17,20,22,24,26,28,29,31,33,35];
+
+function simular(n) {
+  for (let i=0; i<n; i++) {
+    const bola = Math.floor(Math.random() * totalNumeros); // 0–36
+    contador[bola]++;
+    tiradas++;
+  }
+  mostrarResultados();
+}
+
+function mostrarResultados() {
+  const tbody = document.querySelector("#tablaNumeros tbody");
+  tbody.innerHTML = "";
+  for (let i=0; i<totalNumeros; i++) {
+    const porcentaje = tiradas > 0 ? (contador[i] / tiradas * 100).toFixed(2) : 0;
+    const teorica = (1 / totalNumeros * 100).toFixed(2);
+    const fila = `<tr>
+      <td>${i}</td>
+      <td>${contador[i]}</td>
+      <td>${porcentaje}%</td>
+      <td>${teorica}%</td>
+    </tr>`;
+    tbody.innerHTML += fila;
+  }
+
+  // Estadísticas de zonas
+  let rojosCount = rojos.reduce((acc,n) => acc + contador[n], 0);
+  let negrosCount = negros.reduce((acc,n) => acc + contador[n], 0);
+  let pares = contador.map((c,i)=> i!==0 && i%2===0 ? c : 0).reduce((a,b)=>a+b,0);
+  let impares = contador.map((c,i)=> i%2===1 ? c : 0).reduce((a,b)=>a+b,0);
+  let bajos = contador.slice(1,19).reduce((a,b)=>a+b,0);
+  let altos = contador.slice(19,37).reduce((a,b)=>a+b,0);
+
+  document.getElementById("resumen").innerHTML = `
+    <strong>Total de tiradas:</strong> ${tiradas}
+  `;
+
+  document.getElementById("zonas").innerHTML = `
+    <h3>Zonas</h3>
+    Rojos: ${rojosCount} (${(rojosCount/tiradas*100).toFixed(2)}%) - Teórica: 48.65%<br>
+    Negros: ${negrosCount} (${(negrosCount/tiradas*100).toFixed(2)}%) - Teórica: 48.65%<br>
+    Pares: ${pares} (${(pares/tiradas*100).toFixed(2)}%) - Teórica: 48.65%<br>
+    Impares: ${impares} (${(impares/tiradas*100).toFixed(2)}%) - Teórica: 48.65%<br>
+    1-18: ${bajos} (${(bajos/tiradas*100).toFixed(2)}%) - Teórica: 48.65%<br>
+    19-36: ${altos} (${(altos/tiradas*100).toFixed(2)}%) - Teórica: 48.65%
+  `;
+}
+
+function reset() {
+  contador = Array(totalNumeros).fill(0);
+  tiradas = 0;
+  mostrarResultados();
+}
+
+// Inicializar
+mostrarResultados();
+</script>
+</body>
+</html>
